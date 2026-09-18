@@ -47,6 +47,8 @@ struct uplink_processor_configuration {
   double center_frequency_Hz;
   /// Number of receive ports.
   unsigned nof_rx_ports;
+  /// Set to true to zero the DC subcarrier of the received OFDM symbols.
+  bool null_dc = false;
 };
 
 /// Lower physical layer uplink processor - Factory interface.

@@ -61,6 +61,18 @@ static void configure_cli11_ru_sdr_expert_args(CLI::App& app, ru_sdr_unit_expert
              "Set to zero to disable this feature.")
       ->capture_default_str();
   add_option(app,
+             "--rx_to_tx_max_delay_us",
+             config.rx_to_tx_max_delay_us,
+             "Maximum time in microseconds that the downlink processing runs ahead of the last received sample.\n"
+             "Increase it for radios whose transmit samples arrive late, e.g. USB devices with large buffers.")
+      ->capture_default_str()
+      ->check(CLI::Range(1000U, 10000U));
+  add_option(app,
+             "--null_ul_dc_subcarrier",
+             config.null_ul_dc_subcarrier,
+             "Zero the DC subcarrier of the received uplink symbols. Use it for radios with strong LO leakage.")
+      ->capture_default_str();
+  add_option(app,
              "--tx_mode",
              config.transmission_mode,
              "Selects a radio transmission mode. Discontinuous modes are not supported by all radios.\n"

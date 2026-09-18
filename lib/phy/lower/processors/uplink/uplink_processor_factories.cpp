@@ -47,7 +47,8 @@ public:
                                                        .bandwidth_rb      = config.bandwidth_prb,
                                                        .dft_window_offset = dft_window_offset,
                                                        .center_freq_Hz    = config.center_frequency_Hz,
-                                                       .nof_rx_ports      = config.nof_rx_ports};
+                                                       .nof_rx_ports      = config.nof_rx_ports,
+                                                       .null_dc           = config.null_dc};
 
     // Prepare uplink processor configuration.
     lower_phy_uplink_processor_impl::configuration proc_config = {.sector_id    = config.sector_id,

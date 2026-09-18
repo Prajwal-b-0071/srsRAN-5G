@@ -41,6 +41,7 @@ ofdm_symbol_demodulator_impl::ofdm_symbol_demodulator_impl(const ofdm_demodulato
   scs(to_subcarrier_spacing(ofdm_config.numerology)),
   sampling_rate_Hz(to_sampling_rate_Hz(scs, dft_size)),
   scale(ofdm_config.scale),
+  null_dc(ofdm_config.null_dc),
   dft(std::move(dependencies.dft)),
   phase_compensation_table(to_subcarrier_spacing(ofdm_config.numerology),
                            ofdm_config.cp,
@@ -136,6 +137,11 @@ void ofdm_symbol_demodulator_impl::demodulate(resource_grid_writer& grid,
   // Compensate DFT window offset phase shift.
   if (!window_phase_compensation.empty()) {
     srsvec::prod(compensated_output, window_phase_compensation, compensated_output);
+  }
+
+  // Zero the DC subcarrier, which lands on the first DFT bin.
+  if (null_dc) {
+    compensated_output[0] = 0;
   }
 
   // Map the upper bound frequency domain data.

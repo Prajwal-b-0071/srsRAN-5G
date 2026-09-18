@@ -32,6 +32,11 @@ namespace srsran {
 struct ru_sdr_unit_expert_config {
   /// System time-based throttling. See \ref lower_phy_configuration::system_time_throttling for more information.
   float lphy_dl_throttling = 0.0F;
+  /// Maximum time in microseconds that the downlink processing runs ahead of the last received sample. See \ref
+  /// lower_phy_configuration::rx_to_tx_max_delay_us for more information.
+  unsigned rx_to_tx_max_delay_us = 1000;
+  /// Zero the DC subcarrier of the received uplink symbols. See \ref lower_phy_configuration::null_ul_dc_subcarrier.
+  bool null_ul_dc_subcarrier = false;
   /// \brief Selects the radio transmission mode.
   ///
   /// Selects the radio transmission mode between the available options:

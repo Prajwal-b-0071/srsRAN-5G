@@ -52,6 +52,8 @@ class ofdm_symbol_demodulator_impl : public ofdm_symbol_demodulator
   unsigned sampling_rate_Hz;
   /// Scaling factor at the DFT output.
   float scale;
+  /// Zeroes the DC subcarrier at the DFT output.
+  bool null_dc;
   /// DFT processor.
   std::unique_ptr<dft_processor> dft;
   /// Phase compensation table.

@@ -114,8 +114,8 @@ public:
     // Get transmit time offset between the UL and the DL.
     int tx_time_offset = get_tx_time_offset(config.time_alignment_calibration, config.ta_offset, config.srate);
 
-    // Maximum time delay between reception and transmission in samples (1ms plus the time offset).
-    unsigned rx_to_tx_max_delay = config.srate.to_kHz() + tx_time_offset;
+    // Maximum time delay between reception and transmission in samples (configured delay plus the time offset).
+    unsigned rx_to_tx_max_delay = config.srate.to_kHz() * config.rx_to_tx_max_delay_us / 1000U + tx_time_offset;
 
     // Prepare downlink processor configuration.
     downlink_processor_configuration dl_proc_config = {.sector_id               = config.sector_id,
@@ -139,7 +139,8 @@ public:
                                                      .rate                = config.srate,
                                                      .bandwidth_prb       = config.bandwidth_rb,
                                                      .center_frequency_Hz = config.ul_freq_hz,
-                                                     .nof_rx_ports        = config.nof_rx_ports};
+                                                     .nof_rx_ports        = config.nof_rx_ports,
+                                                     .null_dc             = config.null_ul_dc_subcarrier};
 
     // Create uplink processor.
     std::unique_ptr<lower_phy_uplink_processor> ul_proc = uplink_proc_factory->create(ul_proc_config);
@@ -152,7 +153,7 @@ public:
         .nof_tx_ports           = config.nof_tx_ports,
         .nof_rx_ports           = config.nof_rx_ports,
         .tx_time_offset         = static_cast<baseband_gateway_timestamp>(tx_time_offset),
-        .rx_to_tx_max_delay     = config.srate.to_kHz() + proc_bb_adaptor_config.tx_time_offset,
+        .rx_to_tx_max_delay     = rx_to_tx_max_delay,
         .rx_buffer_size         = rx_buffer_size,
         .nof_rx_buffers         = std::max(4U, rx_to_tx_max_delay / rx_buffer_size),
         .system_time_throttling = config.system_time_throttling,

@@ -101,6 +101,16 @@ struct lower_phy_configuration {
   ///
   /// Set to zero to disable this feature.
   float system_time_throttling;
+  /// \brief Maximum time, in microseconds, that the downlink processing runs ahead of the last received sample.
+  ///
+  /// It must cover the receive and transmit latency of the baseband device, otherwise the transmit samples reach the
+  /// device after their transmission time.
+  unsigned rx_to_tx_max_delay_us = 1000;
+  /// \brief Set to true to zero the DC subcarrier of the received PUSCH, PUCCH and SRS symbols.
+  ///
+  /// Radios with strong local oscillator leakage produce a spur on the DC subcarrier that corrupts the channel and
+  /// noise estimates of every transmission overlapping it.
+  bool null_ul_dc_subcarrier = false;
   /// Maximum number of PRACH concurrent requests.
   unsigned max_nof_prach_concurrent_requests = 1;
   /// Baseband receive buffer size policy.

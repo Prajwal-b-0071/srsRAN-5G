@@ -47,6 +47,8 @@ struct puxch_processor_configuration {
   double center_freq_Hz;
   /// Number of receive ports.
   unsigned nof_rx_ports;
+  /// Set to true to zero the DC subcarrier of the received OFDM symbols.
+  bool null_dc = false;
 };
 
 /// Lower physical layer PUxCH processor - Factory interface.

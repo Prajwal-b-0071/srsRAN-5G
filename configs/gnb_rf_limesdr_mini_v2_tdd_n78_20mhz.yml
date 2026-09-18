@@ -1,0 +1,77 @@
+# This example configuration outlines how to configure the srsRAN Project gNB to create a single TDD cell
+# transmitting in band 78, with 20 MHz bandwidth and 30 kHz sub-carrier-spacing, using a LimeSDR Mini V2 through
+# LimeSuiteNG (device_driver: limesuiteng) as the RF frontend using split 8.
+#
+# It is gnb_rf_b200_tdd_n78_20mhz.yml with the USRP replaced by the LimeSDR, plus the settings the OAI gNB needed to
+# serve a COTS UE with the same LimeSDR (openairinterface5g .../GENERIC-NR-5GC/CONF, Lime vs USRP config):
+#   - transmit 3 ms ahead of reception (OAI sl_ahead = 6 slots), to cover the LimeSDR USB latency;
+#   - the SIB1 uplink power and RACH values of the OAI Lime config.
+# Core network: local OAI 5G core (AMF 192.168.70.132, PLMN 00101, TAC 1, SST 1).
+
+cu_cp:
+  amf:
+    addr: 192.168.70.132
+    port: 38412
+    bind_addr: 192.168.70.129
+    supported_tracking_areas:
+      - tac: 1
+        plmn_list:
+          - plmn: "00101"
+            tai_slice_support_list:
+              - sst: 1
+
+cu_up:
+  ngu:
+    socket:
+      - bind_addr: 192.168.70.129
+
+ru_sdr:
+  device_driver: limesuiteng
+  # LimeSuiteNG plugin settings (same keys as the OAI LimeSDR .cfg file). Strings in double quotes, numbers unquoted,
+  # no commas inside values. RX/TX paths must be set: LimeSuiteNG leaves both RF switches open (NONE) by default.
+  device_args: 'port0:"dev0",port0_max_channels_to_use:1,port0_rx_path:"LNAH",port0_tx_path:"BAND1",port0_linkFormat:"I12",port0_rx_calibration:"dciq",port0_tx_calibration:"dciq",logLevel:2'
+  srate: 23.04
+  # LimeSuiteNG gain-table rows 0..50 (not dB). TX at maximum. RX at 30 (LNA near maximum, PGA 19 dB below): at 50 a
+  # COTS UE on the bench overloads the receiver, at 20 the uplink is too weak.
+  tx_gain: 50
+  rx_gain: 30
+  expert_cfg:
+    # Transmit 3 ms ahead of reception, to cover the LimeSDR USB latency (OAI uses 6 slots).
+    rx_to_tx_max_delay_us: 3000
+    # The LimeSDR receive DC subcarrier carries a spur ~40 dB above the noise floor, which ruins the channel and noise
+    # estimates of every PUSCH overlapping the carrier centre.
+    null_ul_dc_subcarrier: true
+
+cell_cfg:
+  dl_arfcn: 632628
+  band: 78
+  channel_bandwidth_MHz: 20
+  common_scs: 30
+  plmn: "00101"
+  tac: 1
+  pci: 1
+  ssb:
+    ssb_block_power_dbm: -5        # OAI Lime ssPBCH_BlockPower
+  ul_common:
+    p_max: 20                      # OAI Lime pMax
+  prach:
+    preamble_rx_target_pw: -96     # OAI Lime preambleReceivedTargetPower
+    power_ramping_step_db: 2       # OAI Lime powerRampingStep dB2
+    preamble_trans_max: 10         # OAI Lime preambleTransMax n10
+    ra_resp_window: 20             # OAI Lime uses sl80 (40 ms); srsRAN allows at most 10 ms (20 slots)
+  pusch:
+    msg3_delta_preamble: 1         # OAI Lime msg3_DeltaPreamble
+    p0_nominal_with_grant: -86     # OAI Lime p0_NominalWithGrant
+    # Closed-loop PUSCH power control stays off (srsRAN default): with the LimeSDR it drives the UE to maximum power.
+  pucch:
+    p0_nominal: -94                # OAI Lime p0_nominal
+
+log:
+  filename: /tmp/gnb.log
+  all_level: warning
+
+pcap:
+  mac_enable: false
+  mac_filename: /tmp/gnb_mac.pcap
+  ngap_enable: false
+  ngap_filename: /tmp/gnb_ngap.pcap

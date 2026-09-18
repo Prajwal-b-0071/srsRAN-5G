@@ -38,6 +38,9 @@ void prach_processor_worker::run_state_wait(const baseband_gateway_buffer_reader
     // Notify a late PRACH request.
     notifier->on_prach_request_late(prach_context);
 
+    // Return the PRACH buffer to the pool, otherwise it stays held by this idle worker.
+    buffer.reset();
+
     // Transition to idle.
     state = states::idle;
 

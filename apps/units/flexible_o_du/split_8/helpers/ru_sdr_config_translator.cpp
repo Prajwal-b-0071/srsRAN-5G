@@ -64,6 +64,8 @@ static lower_phy_configuration generate_lower_phy_config(const flexible_o_du_ru_
 
   // Get lower PHY system time throttling.
   out_cfg.system_time_throttling = ru_cfg.expert_cfg.lphy_dl_throttling;
+  out_cfg.rx_to_tx_max_delay_us  = ru_cfg.expert_cfg.rx_to_tx_max_delay_us;
+  out_cfg.null_ul_dc_subcarrier  = ru_cfg.expert_cfg.null_ul_dc_subcarrier;
 
   // Set max concurrent PRACH requests to the max processing delay (in slots) plus 2 extra slots: one for sample
   // collection and one for potential processing delay.

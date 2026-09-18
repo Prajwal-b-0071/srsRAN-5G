@@ -17,15 +17,16 @@ radio_limesuiteng_tx_stream::radio_limesuiteng_tx_stream(std::shared_ptr<LimePlu
 void radio_limesuiteng_tx_stream::transmit(const baseband_gateway_buffer_reader&        data,
                                            const baseband_gateway_transmitter_metadata& inmeta)
 {
-  if (inmeta.is_empty)
-    return;
-
   if (!do_work)
     return;
 
-  int      start_padding  = inmeta.tx_start.has_value() ? inmeta.tx_start.value() : 0;
-  int      tx_end_padding = inmeta.tx_end.has_value() ? inmeta.tx_start.value() : 0;
-  unsigned nsamples       = data.get_nof_samples() - tx_end_padding - start_padding;
+  // Empty buffers are zero-filled by the lower PHY and are still written, as the UHD driver does in continuous mode.
+  // LimeSuiteNG packs consecutive writes into the same FPGA packet using the timestamp of the first one, so skipping
+  // empty buffers merges the tail of a burst into the first packet of the next burst with a stale timestamp.
+  unsigned start_padding = inmeta.tx_start.value_or(0);
+  // tx_end is the sample index where the signal ends, not a padding length.
+  unsigned end_index = inmeta.tx_end.value_or(data.get_nof_samples());
+  unsigned nsamples  = end_index - start_padding;
 
   // Flatten buffers.
   unsigned                                     nof_channels = data.get_nof_channels();
@@ -38,7 +39,7 @@ void radio_limesuiteng_tx_stream::transmit(const baseband_gateway_buffer_reader&
   lime::StreamTxMeta meta;
   meta.timestamp    = lime::Timespec(inmeta.ts + start_padding);
   meta.hasTimestamp = true;
-  meta.flags        = tx_end_padding ? lime::StreamTxMeta::EndOfBurst : 0;
+  meta.flags        = inmeta.tx_end.has_value() ? lime::StreamTxMeta::EndOfBurst : 0;
 
   int samplesSent = LimePlugin_Write_complex16(context.get(), src, nsamples, portId, meta);
   if (samplesSent <= 0) {

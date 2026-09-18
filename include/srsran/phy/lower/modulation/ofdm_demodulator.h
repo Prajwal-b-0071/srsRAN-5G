@@ -46,6 +46,9 @@ struct ofdm_demodulator_configuration {
   float scale;
   /// Carrier center frequency in Hertz.
   double center_freq_Hz;
+  /// Set to true to zero the DC subcarrier at the DFT output, so a local oscillator leakage spur does not corrupt the
+  /// channel and noise estimates of the channels that overlap with it.
+  bool null_dc = false;
 };
 
 /// \brief Describes an OFDM demodulator that demodulates at symbol granularity.
